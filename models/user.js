@@ -12,6 +12,8 @@ const UserSchema = new mongoose.Schema({
 		type:Boolean,
 		default:false
 	}
+
+
 })
 //生成模型
 const UserModel = mongoose.model('User', UserSchema);
