@@ -29,11 +29,18 @@ router.post('/add',(req,res)=>{
 	CategoryModel.findOne({name})
 	.then(category=>{
 		if(category){//已经存在同名的分类
-
+			res.render('admin/error',{
+				userInfo:req.userInfo,
+				message:'添加分类失败，已存在类名'
+			})
 		}else{
 			CategoryModel.insertMany({name,order})
 			.then(categories=>{
-				
+				res.render('admin/success',{
+					userInfo:req.userInfo,
+					message:'添加分类成功',
+					url:'/category'
+				})
 			})
 			.catch(err=>{
 				throw err
@@ -41,7 +48,10 @@ router.post('/add',(req,res)=>{
 		}
 	})
 	.catch(err=>{
-
+		res.render('admin/error',{
+			userInfo:req.userInfo,
+			message:'添加分类失败，已存在类名，请稍后再试'
+		})
 	})
 })
 module.exports = router
