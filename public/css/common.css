@@ -96,7 +96,9 @@
 footer{
 	text-align: center;
 }
-
+#article-wrap{
+	min-height: 300px;
+}
 
 
 

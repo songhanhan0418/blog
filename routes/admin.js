@@ -1,5 +1,9 @@
 const express = require('express')
+const multer = require('multer')
+const upload = multer({ dest:'public/uploads/'})
+
 const UserModel = require('../models/user.js')
+const pagination = require('../util/pagination.js')
 const router = express.Router()
 
 router.use((req,res,next) => {
@@ -25,49 +29,38 @@ router.get('/users',(req,res)=>{
 	//第一页：跳过两条
 	//第page页：跳过(page - 1) * limit
 
-	let {page} = req.query;
-
-	const limit = 2;
-
-	page = parseInt(page)
-	if(isNaN(page)){
-		page = 1
+	const options={
+		page:req.query.page,
+		model:UserModel,
+		query:{},
+		projection:'-password -__v',
+		sort:{_id:1},
+		populates:[{path:'user',select:'username'},{path:'category',select:'name'}]
 	}
-	if(page == 0){
-		page = 1
-	}
-	UserModel.countDocuments({})
-	.then(count=>{
-		//计算总页数
-		const pages = Math.ceil(count/limit)
-		if(page > pages){
-			page = pages
-		}
-		//生成页码数组
-		const list = [];
-		for(var i = 1;i<=pages;i++){
-			list.push(i)
-		}
-
-		//每页显示条数
-		const skip = (page - 1) * limit
-
-		UserModel.find({},'-password -__v')
-		.skip(skip)
-		.limit(limit)
-		.then(users=>{
-			res.render('admin/user_list',{
-				userInfo:req.userInfo,
-				users,
-				page,
-				list
-			})	
-		})
+	
+	pagination(options)
+	.then(data=>{
+		res.render('admin/user_list',{
+			userInfo:req.userInfo,
+			users:data.docs,
+			page:data.page,
+			list:data.list,
+			pages:data.pages,
+			url:'/admin/users'
+		})			
 	})
-	
-
 
 
 	
+})
+
+//处理上传图片
+router.post('/uploadImage',upload.single('upload'),(req,res)=>{
+	console.log(req.file)
+	const uploadedFilePath = '/uploads/'+req.file.filename
+	res.json({
+		uploaded:true,
+		url:uploadedFilePath
+	})
 })
 module.exports = router
